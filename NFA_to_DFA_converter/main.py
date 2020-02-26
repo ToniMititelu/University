@@ -1,5 +1,5 @@
 '''
-Given an NFA transform it in an equivalent DFA
+Convert NFA to DFA
 The NFA is given as:
 - no of states
 - states
