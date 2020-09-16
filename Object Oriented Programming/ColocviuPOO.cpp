@@ -1,7 +1,5 @@
 // This was a 90 min exam and this is what i managed to achieve in that time 
 
-// Mititelu George-Antonio, 131, GNU GCC compiler, -std=c++11
-
 #include <iostream>
 #include <fstream>
 #include <vector>
