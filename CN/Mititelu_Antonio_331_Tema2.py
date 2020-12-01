@@ -3,19 +3,20 @@ import math
 
 def sub_desc(U, C, n):
     x = np.zeros(n)
-    for i in range(n - 1, -1, -1):
-        coefs = U[i, i + 1:]
-        values = x[i + 1:]
-        x[i] = (C[i] - coefs @ values) / U[i, i]
-    
-    return x
+    x[n-1] = C[n-1] / U[n-1, n-1]
+    k = n-2
+    while k:
+        x[k] = (C[k] - sum([el for el in (U[k, k+1:] * C[k+1:])])) / U[k, k]
+        k -= 1
+
+    return x 
 
 def sub_asc(U, C, n):
     x = np.zeros(n)
-    for i in range(n):
-        coefs = U[i, i + 1:]
-        values = x[i + 1:]
-        x[i] = (C[i] - coefs @ values) / U[i, i]
+    x[0] = C[0] / U[0, 0]
+    for k in range(1, n):
+        l = (C[k] - sum(sum([el for el in (U[k, :k] * C[:k])]))) / U[k, k]
+        x[k] = l
 
     return x
 
@@ -38,26 +39,23 @@ def gauss_pivotare_totala(matrice, termeni_liberi):
         # indicii in matricea mare
         index_linie, index_coloana = index_linie + i, index_coloana + i
 
+        # Schimba linia
         if index_linie != i:
             matricea_extinsa[[i, index_linie]] = matricea_extinsa[[index_linie, i]]
 
+        # Schimb coloana si indicii necunoscutelor
         if index_coloana != i: 
             matricea_extinsa[:, [i, index_coloana]] = matricea_extinsa[:, [index_coloana, i]]
             indici[[i, index_coloana]] = indici[[index_coloana, i]]
 
+        # Modific matricea
         linie_curenta = matricea_extinsa[i, :]
-
-        # Determin raportul pentru fiecare rând
-        raport = matricea_extinsa[i + 1:, i] / matricea_extinsa[i, i]
-        
-        # Înmulțesc fiecare raport cu linia curenta
-        dif = np.outer(raport, linie_curenta)
-
-        # Actualizez matricea
-        matricea_extinsa[i + 1:, :] -= dif
+        for j in range(i+1, n):
+            m = matricea_extinsa[j, i] / matricea_extinsa[i, i]
+            matricea_extinsa[j, :] = matricea_extinsa[j, :] - m * linie_curenta
     
-    U = matricea_extinsa[:,:n]
-    C = matricea_extinsa[:,n]
+    U = matricea_extinsa[:, :n]
+    C = matricea_extinsa[:, n]
 
     return sub_desc(U, C, n)
 
@@ -99,6 +97,8 @@ def ex2():
 
     inversa = np.zeros(shape=matrice.shape)
 
+    # Ca sa calculam inversa putem lua fiecare coloana din In si sa creeam sistemul Matrice * x = Coloana din In
+    # Calculam astfel fiecare linie din Inversa
     for i, coloana in enumerate(termeni_liberi):
         inversa[i] = gauss_pivotare_totala(matrice, np.reshape(coloana, (-1, 1)))
         break
@@ -139,28 +139,28 @@ def ex3():
             print('A nu admite factorizarea LU')
             return
 
+        # Schimba liniile
         if index != i:
             matricea_extinsa[[i, index]] = matricea_extinsa[[index, i]]
             L[[i, index]] = L[[index, i]]
             indici[[i, index]] = indici[[index, i]]
 
-        # Determin raportul pentru fiecare rând
-        raport = matricea_extinsa[i + 1:, i] / matricea_extinsa[i, i]
-        
-        # Înmulțesc fiecare raport cu linia curenta
-        dif = np.outer(raport, matricea_extinsa[i, :])
-
-        # Actualizez matricea
-        matricea_extinsa[i + 1:, :] -= dif
+        # Modifica matricea 
+        linie_curenta = matricea_extinsa[i, :]
+        for j in range(i+1, n):
+            m = matricea_extinsa[j, i] / matricea_extinsa[i, i]
+            matricea_extinsa[j, :] = matricea_extinsa[j, :] - m * linie_curenta
 
         if matricea_extinsa[n-1, n-1] == 0:
             print('A nu admite factorizarea LU')
             return
 
+    # Ne raman 2 sisteme triunghiulare.
+    # L * y = _b, apelam sub_asc si rezultatul y il vom folosi pt a rezolva sistemul matrice * x = y
+    # Rezultatul x este solutia sistemului initial
     _b = [termeni_liberi[wk] for wk in indici]
-
     y = sub_asc(L[:, :n], _b, n)
-    return sub_desc(matricea_extinsa[:, :n], np.reshape(y, (-1, 1)), n)
+    return sub_desc(matricea_extinsa[:, :n], y, n)
 
 
 # Exercitiul 4
@@ -175,6 +175,7 @@ def ex4():
     n = matrice.shape[0]
     L = np.zeros((n, n))
 
+    # Verific daca exista descompunerea Cholesky
     if not (matrice == matrice.T).all():
         print('matrice asimetrica')
         return
@@ -188,10 +189,12 @@ def ex4():
         print('matricea nu e pozitiv definita')
         return
     
+    # Completez prima linie
     L[0, 0] = math.sqrt(alfa)
     for i in range(1, n):
         L[i, 0] = matrice[i, 0] / L[0, 0]
     
+    # Restul
     for i in range(1, n):
         alfa = matrice[i, i] - sum([el**2 for el in L[i, :i]])
         if alfa <= 0:
@@ -204,4 +207,4 @@ def ex4():
         
     print(L)
 
-ex4()
+ex2()
