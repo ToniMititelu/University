@@ -14,24 +14,19 @@ def plot_3d(f, X, Y):
     plt.show()
 
 
-def simetrica(A):
-    return np.all(A == A.T)
-
-
 # Sylvester: se calculează toți determinanții formați din primele linii și primele coloane ale matricii; 
 # dacă toți au valoare strict mai mare decât zero atunci matricea este pozitiv definită. 
 def pozitiv_definita(A):
-    for i in range(A.shape[0]):
-        if np.linalg.det(A[:i, :i]) <= 0:
-            return False
-    return True
+    return all([np.linalg.det(A[:i, :i]) > 0 for i in range(A.shape[0])])
 
 
 # Trebuie sa fie simetrica si pozitiv definita
 def are_punct_minim(A):
-    return all([simetrica(A), pozitiv_definita(A)])
+    return all([np.all(A == A.T), pozitiv_definita(A)])
 
 
+# Se alege un punct x0 apropiat de minim (am ales P(-1, 1)) si 
+# mergem in directia gradientului minimizand forma patratica a matricii A
 def pasul_descendent(A, b):
     # Punct initial
     x = np.array([[-1], [1]])
@@ -52,6 +47,7 @@ def pasul_descendent(A, b):
     return puncte
 
 
+# Se alege un punct x0 apropiat de minim (am ales P(-1, 1)) 
 def gradienti_conjugati(A, b):
     # Punct initial
     x = np.array([[-1], [1]])
@@ -64,8 +60,8 @@ def gradienti_conjugati(A, b):
         lr = np.matmul(d.T, residue) / np.matmul(np.matmul(d.T, A), d)
         x = x + lr * d
         _residue = residue - lr * np.matmul(A, d)
-        direction_rate = np.matmul(_residue.T, _residue) / np.matmul(residue.T, residue)
-        direction = _residue + direction_rate * direction
+        d_rate = np.matmul(_residue.T, _residue) / np.matmul(residue.T, residue)
+        d = _residue + d_rate * d
         residue = _residue
         puncte.append(x)
 
@@ -94,6 +90,7 @@ def ex1():
     # Functia
     f = lambda x, y : 24.5 * (x ** 2) + 7 * x * y + 3 * x + 13 * (y ** 2) - 4 * y
     
+    # afisarea 3d a functiei
     step = 0.25
     X, Y = np.mgrid[-2:2:step, -3:3:step]
     plot_3d(f, X, Y)
@@ -102,6 +99,7 @@ def ex1():
     dx = lambda x, y : 49 * x + 7 * y + 3
     dy = lambda x, y : 7 * x + 26 * y - 4
 
+    # Matricile rezultate din derivatele partiale
     A = np.array([
         [49, 7],
         [7, 26],
@@ -123,6 +121,7 @@ def ex1():
     reprezentare_pe_graficul_curbelor_de_nivel(f, X, Y, puncte_pasul_descendent, puncte_gradienti_conjugati)
 
 
+# clasa ajutatoare
 class Interval:
     def __init__(self, minim, maxim):
         self.minim = minim
@@ -143,13 +142,16 @@ def err(y_real, y_approx, x_real, minim, maxim):
     plt.show()
 
 
+# functie pentru calcularea coeficientilor folosind metoda newton
 def newton(N, x, y, k):
     return sum([y[i] * np.prod([(k - x[j])/(x[i] - x[j]) for j in range(N + 1) if i != j]) for i in range(N + 1)])
 
 
 def ex2():
+    # functia
     f = lambda x : 6 * np.sin(6 * x) + 1 * np.cos(4 * x) - 8.92 * x
 
+    # intervalul pe care se lucreaza
     interval = Interval(-np.pi, +np.pi)
 
     # Gradul polinomului, 50 pentru o eroare cat mai mica
@@ -220,7 +222,7 @@ def ex3():
     # Derivata
     dx = lambda x : -5 * np.sin(5 * x) + 5 * np.cos(5 * x) - 21.54
 
-    # Nr de subintervale
+    # Nr de subintervale, 200 pentru o eroare cat mai mica
     N = 200
 
     interval = Interval(-np.pi, +np.pi)
@@ -233,6 +235,7 @@ def ex3():
     c = compute_c(N, a, b, h)
     d = compute_d(N, a, b, h)
 
+    # functie ajutatoare
     spline = lambda j : (lambda X : a[j] + b[j] * (X - x[j]) + c[j] * (X - x[j]) ** 2 + d[j] * (X - x[j]) ** 3)
     
     nr_puncte = 200
@@ -256,5 +259,5 @@ def ex3():
     err(y_real, y_aproximat, x_real, interval.minim, interval.maxim)
 
 ex1()
-# ex2()
-# ex3()
+ex2()
+ex3()
