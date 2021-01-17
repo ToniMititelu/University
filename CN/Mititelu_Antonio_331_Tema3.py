@@ -178,27 +178,36 @@ def ex2():
     err(y_real, y_interpolat, x_real, interval.minim, interval.maxim)
 
 
-# Putem afla b rezolvand sistemul 
 def compute_b(N, x, a, h, dx):
-    B = np.zeros((N + 1, N + 1))
-
+    # folosind o diviziune echidistanta cu pasul h avem sistemul 
+    # b1 = dx(x1)
+    # bj-1 + 4bj + bj+1 = 3/h * (f(x+1) - f(x-1)), j = 2,n iar f(x) <=> a[x]
+    # bn = dx(xn)
+    # si matricea asociata B 
+    # [
+    #     [1, 0, 0, 0, 0 ...], 
+    #     [1, 4, 1, 0, 0 ...],
+    #     [0, 1, 4, 1, 0 ...],
+    #     .
+    #     .
+    #     [0, 0, 0, 0, ... 1]
+    # ]
+    # Putem afla b rezolvand sistemul 
+    B, W = np.zeros((N + 1, N + 1)), np.zeros((N + 1, 1))
+    
+    W[0] = dx(x[0])
     B[0, 0] = 1
     for i in range(1, N):
-        B[i, i - 1] = 1
-        B[i, i] = 4
-        B[i, i + 1] = 1
+        W[i] = 3 * (a[i + 1] - a[i - 1]) / h
+        B[i, i - 1], B[i, i], B[i, i + 1] = 1, 4, 1
+    W[N] = dx(x[N])
     B[N, N] = 1
 
-    W = np.zeros((N + 1, 1))
-    W[0] = dx(x[0])
-    for i in range(1, N):
-        W[i] = 3 * (a[i + 1] - a[i - 1]) / h
-    W[N] = dx(x[N])
-
+    # elementele din b sunt solutiile sistemului
     return np.linalg.solve(B, W)
 
 
-# putem acum calcula c si d
+# putem acum calcula c si d folosindu-ne de formule
 def compute_c(N, a, b, h):
     c = np.zeros((N, 1))
     for i in range(N):
@@ -235,11 +244,10 @@ def ex3():
     c = compute_c(N, a, b, h)
     d = compute_d(N, a, b, h)
 
-    # functie ajutatoare
+    # functie pt creeare spline
     spline = lambda j : (lambda X : a[j] + b[j] * (X - x[j]) + c[j] * (X - x[j]) ** 2 + d[j] * (X - x[j]) ** 3)
     
-    nr_puncte = 200
-    x_real = np.linspace(interval.minim, interval.maxim, nr_puncte)
+    x_real = np.linspace(interval.minim, interval.maxim, 200)
     y_real = f(x_real)
     
     # functie definita pe intervale
