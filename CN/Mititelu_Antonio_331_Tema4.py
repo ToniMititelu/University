@@ -19,13 +19,12 @@ def plot(puncte, h, f_, f__, interval: Interval):
     y_real = f_(puncte)
     y_approx = f__(puncte, h)
 
-    plt.suptitle('Aproximarea derivatei a II-a')
     plt.plot(puncte, y_real, label='derivata secunda reala')
     plt.plot(puncte, y_approx, label='folosind formula de aproximare prin diferente finite centrale')
     plt.legend()
     plt.show()
 
-    plt.suptitle('Eroarea de trunchiere')
+    plt.suptitle('err de trunchiere')
     plt.plot(puncte, np.abs(y_real - y_approx))
     plt.hlines(EPSILON, xmin=interval.minim, xmax=interval.maxim)
     plt.show()
@@ -58,7 +57,7 @@ def ex1():
     plot(puncte, h, f_, f__, interval)
 
 
-class Metode:
+class Metoda:
     DREPTUNGHI = 'dreptunghi'
     TRAPEZ = 'trapez'
     SIMPSON = 'Simpson'
@@ -93,9 +92,9 @@ def ex2():
     # Puncte
     puncte = np.linspace(interval.minim, interval.maxim, N)
 
-    print(f'Integrare prin metoda de cuadratura sumata a dreptunghiului: {integrare(f, puncte, Metode.DREPTUNGHI)}')
-    print(f'Integrare prin metoda de cuadratura sumata a trapezului: {integrare(f, puncte, Metode.TRAPEZ)}')
-    print(f'Integrare prin metoda de cuadratura sumata Simpson: {integrare(f, puncte, Metode.SIMPSON)}')
+    print(f'Integrare prin metoda de cuadratura sumata a dreptunghiului: {integrare(f, puncte, Metoda.DREPTUNGHI)}')
+    print(f'Integrare prin metoda de cuadratura sumata a trapezului: {integrare(f, puncte, Metoda.TRAPEZ)}')
+    print(f'Integrare prin metoda de cuadratura sumata Simpson: {integrare(f, puncte, Metoda.SIMPSON)}')
 
 ex1()
 ex2()
